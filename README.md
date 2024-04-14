@@ -1,2 +1,1 @@
-# CAB230-Assignment
-QUT CAB230 Web Computing Assignment 1
+# QUT CAB230 Assignment 1
