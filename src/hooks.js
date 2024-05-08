@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = process.env.REACT_APP_API_URL
+const API_URL = "http://4.237.58.241:3000"
 
 export function useGetCountryAndVolcanoes() {
     const [countriesList, setCountriesList] = useState([])
@@ -9,15 +9,11 @@ export function useGetCountryAndVolcanoes() {
     const [populationDist, setPopulationDist] = useState("-")
   
     useEffect(() => {
-        fetch(`http://4.237.58.241:3000/countries`)
+        fetch(`${API_URL}/countries`)
         .then(response => response.json())
         .then(result => {
             setCountriesList(result)
         }).catch(e => errorHandler(e))
-        
-        return () => {
-      
-        }
     }, [])
   
     useEffect(() => {
@@ -28,12 +24,10 @@ export function useGetCountryAndVolcanoes() {
             fetch(COUNTRY_URL)
             .then(response => response.json())
             .then(result => setVolcanoesList(result))
-            console.log(populationDist)
         } else {
             fetch(POPULATED_URL)
             .then(response => response.json())
             .then(result => setVolcanoesList(result))
-            console.log(populationDist)
         }
         
     }, [selectedCountry, populationDist])
@@ -42,9 +36,38 @@ export function useGetCountryAndVolcanoes() {
         volcanoesList, populationDist, setPopulationDist }
 }
 
+export function useGetVolcanoDetails(id, token) {
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [selectedVolcano, setSelectVolcano] = useState({})
+  
+    useEffect(() => {
+      if(!token){
+        fetch(`${API_URL}/volcano/${id}`)
+        .then(response => response.json())
+        .then(result => {
+            setSelectVolcano(result)
+        }).catch(e => errorHandler(e))
+      } else {
+        const requestOptions = {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        }}
+  
+        fetch(`${API_URL}/volcano/${id}`, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            setSelectVolcano(result)
+        }).catch(e => errorHandler(e))
+        setIsLoggedIn(true)
+      }
+    }, [])
+
+    return [isLoggedIn, selectedVolcano]
+}
 
 export const errorHandler = (e) => {
-    // Custom message for failed HTTP codes
   if (e.status === 400) {
       throw new Error('400, Bad Request Sent');}
   if (e.status === 404) {

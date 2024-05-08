@@ -1,21 +1,25 @@
-import React, { useState, useEffect, useReducer } from "react"
+import React, { useState, useEffect } from "react"
 import { Map, Marker } from "pigeon-maps"
 import { Table, Cascader, Button, Modal, Select } from 'antd'
-import { errorHandler, useGetCountryAndVolcanoes } from "./hooks"
-import { CodeSandboxCircleFilled, DownOutlined, SmileOutlined } from '@ant-design/icons'
 import { Bar } from 'react-chartjs-2';
 import { Chart, CategoryScale, Legend, LinearScale,
   BarElement, Title, Tooltip } from 'chart.js'
 
+  import { useGetCountryAndVolcanoes, useGetVolcanoDetails } from "./hooks"
+
 Chart.register(CategoryScale, LinearScale,
 BarElement, Title, Tooltip, Legend)
 
-const API_URL = process.env.REACT_APP_API_URL
-
-export default function VolcanoListPage () {
+export default function VolcanoListPage ({setBackground}) {
   const token = localStorage.getItem("token")
-  const { countriesList, selectedCountry, setSelectCountry, 
-    volcanoesList, populationDist, setPopulationDist } = useGetCountryAndVolcanoes()
+  const { countriesList, selectedCountry, 
+          setSelectCountry, volcanoesList, 
+          populationDist, setPopulationDist 
+        } = useGetCountryAndVolcanoes()
+
+  useEffect(() => {
+    setBackground(1)
+  }, [])
 
   const handleResetClick = () => {
     setSelectCountry(null)
@@ -37,8 +41,17 @@ export default function VolcanoListPage () {
         volcano_copy[i] = volcano_dict
       })
 
-      return <Table rowKey={row => row.action} dataSource={volcano_copy}>
-          <Table.Column title="Name" dataIndex="name" key="name"/>
+      return <Table 
+              id="volcano-table"
+              pagination={{ 
+                defaultPageSize: "5", 
+                pageSizeOptions: ["5", "10"],
+                responsive: true,
+                size: "small"  
+              }} 
+              rowKey={row => row.action} 
+              dataSource={volcano_copy}>
+          <Table.Column title="Location" dataIndex="name" key="name"/>
           <Table.Column title="Region" dataIndex="region" key="region" />
           <Table.Column title="Subregion" dataIndex="subregion" key="subregion"/>
           <Table.Column dataIndex="action" key="action"
@@ -81,6 +94,7 @@ export default function VolcanoListPage () {
         <div>
           Select a country: &nbsp;
           <Cascader 
+            id="dropdown"
             allowClear={false}
             placeholder="Select or type"
             value={selectedCountry}
@@ -104,7 +118,7 @@ export default function VolcanoListPage () {
             </span>
             : null
           } &nbsp;
-          <Button onClick={handleResetClick}>Reset</Button>
+          <Button className="buttons"onClick={handleResetClick}>Reset</Button>
         </div>)
   }
 
@@ -119,33 +133,7 @@ export default function VolcanoListPage () {
 
 function VolcanoDetailsPage({id, token}) {
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [selectedVolcano, setSelectVolcano] = useState({})
-
-  useEffect(() => {
-    if(!token){
-      fetch(`${API_URL}/volcano/${id}`)
-      .then(response => response.json())
-      .then(result => {
-          setSelectVolcano(result)
-      })
-    } else {
-      const requestOptions = {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-      }
-      fetch(`${API_URL}/volcano/${id}`, requestOptions)
-      .then(response => response.json())
-      .then(result => {
-          setSelectVolcano(result)
-      })
-      setIsLoggedIn(true)
-    }
-  }, [])
-
+  const [isLoggedIn, selectedVolcano] = useGetVolcanoDetails(id, token)
 
   const DisplayMap = () => {
     const color = `hsl(${10}deg 39% 70%)`
@@ -187,15 +175,16 @@ function VolcanoDetailsPage({id, token}) {
 
   return (
     <div>
-      <Button onClick={() => setIsOpen(true)}>View</Button>
+      <Button className="buttons" onClick={() => setIsOpen(true)}>View</Button>
       <Modal
-        title={"Volcano: " + selectedVolcano.name}
-        centered={false}
+        id="volcano-modal"
+        title={"Location: " + selectedVolcano.name}
+        centered={true}
         open={isOpen}
         onOk={() => setIsOpen(false)}
         cancelText="Close"
         onCancel={() => setIsOpen(false)}
-        width={1000}>
+        width="40%">
           <hr align="left" width="50%" />
           <p>
             Last Eruption: {selectedVolcano.last_eruption}<br/>
@@ -210,7 +199,7 @@ function VolcanoDetailsPage({id, token}) {
             <DisplayMap />
           </p>
           {isLoggedIn? 
-            <span><hr/>
+            <span style={{display: "block", marginLeft: "auto", marginRight: "auto"}} ><hr/>
             <br/>
               <Bar options={GetChartProps()[0]} data={GetChartProps()[1]} />
             </span>

@@ -1,38 +1,39 @@
 body {
   background-color: white;
-  padding: 20px;
-  margin: 10px;
+
 }
 h1, h2, p, ul, li {
   font-family: sans-serif;
 }
 
-.content {
-  background-color: #9bc1bc;
-  padding: 1px;
-}
-.content h2 {
-  margin: 20px;
-}
-.content li {
-  margin-bottom: 10px;
+#router-div {
+  position: relative;
+  top: 0;
+  padding: 10px;
+  min-height: 80vh;
 }
 
-.articleOptions {
-  box-sizing: border-box;
-  width: 25%;
-  float: left;
-  padding: 15px;
-  border: 1px solid black;
+#router-menu {
+  top: 0;
+  left: 0;
 }
-.article-content {
-  box-sizing: border-box;
-  width: 75%;
-  float: left;
-  padding: 15px;
-  border: 1px solid black;
+
+#volcano-table {
+  alt: "volcano list table";
 }
-.articleOptions .articleButtons {
-  display: flex;
-  align-items: center;
+
+#volcano-modal {
+  alt: "volcano modal"
+}
+
+.buttons {
+  alt: "page button"
+}
+
+.form {
+  alt: "page form"
+}
+
+#dropdown {
+  alt: "cascading-dropdown"
 }
